@@ -111,10 +111,10 @@ Resume from the first step whose output is missing; steps before it are skipped,
 
 ### Step 9 — PR (L3)
 1. **Draft**: spawn `pr` in draft mode. Pass: all `docs/*.md`, `output/reports/`, and `output/test-results/results.md` (embedded in the PR body because `output/` is gitignored). Tell it explicitly: "Draft mode — do not create a branch, commit, push or PR."
-2. Display the full PR draft (title + body) and any prerequisite problems the agent reported (no remote, `gh auth` failing).
+2. Display the full PR draft (title + body) and any prerequisite problems the agent reported (no remote, GitHub MCP server unavailable).
 3. Ask via AskUserQuestion: "PR draft above. Create this PR on GitHub? (y/n)". Only an explicit "y" counts as confirmation.
 4. On **n**: say "PR not created. You can re-run the PR agent or edit the draft manually." and stop.
-5. On **y**: spawn `pr` again in create mode, stating that the user has explicitly confirmed the draft, and include the approved draft text. The agent creates a feature branch, commits `src/`, `tests/` and `docs/` (never `output/`), pushes, and runs `gh pr create`.
+5. On **y**: spawn `pr` again in create mode, stating that the user has explicitly confirmed the draft, and include the approved draft text. The agent creates a feature branch, commits `src/`, `tests/` and `docs/` (never `output/`), pushes, and creates the PR through the GitHub MCP server (`mcp__github__create_pull_request`).
 6. Gate: a PR URL was returned. Display it, then append the final changelog entry.
 
 ## 6. Error Handling Summary

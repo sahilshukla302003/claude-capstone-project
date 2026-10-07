@@ -95,7 +95,10 @@ agentic-sdlc-pipeline/
 
 - **Claude Code** — latest version with agent support
 - **Python** ≥ 3.11
-- **Git** and **GitHub CLI** (`gh`) — authenticated (`gh auth status`)
+- **Git** with a GitHub `origin` remote
+- **GitHub MCP server** registered with a personal access token (`repo` scope), used by the PR step:
+  `claude mcp add --transport http github https://api.githubcopilot.com/mcp/ --header "Authorization: Bearer $GITHUB_PAT"`
+  (verify with `claude mcp list`)
 - No other API keys or external services required
 
 ---
