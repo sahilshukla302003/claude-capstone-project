@@ -2,26 +2,21 @@
 
 ## Project Overview
 
-This repo contains a Claude Code-native agentic pipeline that accepts any Python project user story and drives it through the full software development lifecycle — from requirements through a merged GitHub PR — entirely via Claude agents, skills, and hooks. You interact only with the orchestrator; it manages all specialist agents internally.
+This repo contains a Claude Code-native agentic pipeline that accepts any Python project user story and drives it through the full software development lifecycle — from requirements through a GitHub PR — entirely via Claude agents, skills, and hooks. You interact only with the orchestrator; it spawns and gates all specialist agents.
 
 ---
 
 ## How to Run the Pipeline
 
-The orchestrator must run as the main-thread agent. Subagents cannot spawn other subagents, so it cannot be started with `@orchestrator`.
+Invoke the orchestrator with a user story path:
 
 ```
-claude --agent orchestrator
-> process user-stories/<filename>.md
+@orchestrator process user-stories/<filename>.md
 ```
 
-Add `--fresh` to regenerate all artifacts from scratch (existing outputs are otherwise skipped):
+The orchestrator verifies the file exists, then checks which gate files already exist (resumability). If any steps are complete it lists them and asks `Continue? (y/n)` before resuming from the next incomplete step. To regenerate an artifact, delete its gate file before re-invoking.
 
-```
-> process user-stories/<filename>.md --fresh
-```
-
-**You never invoke subagents directly.**
+**You never invoke specialist subagents directly.**
 
 ---
 
@@ -29,15 +24,15 @@ Add `--fresh` to regenerate all artifacts from scratch (existing outputs are oth
 
 The orchestrator executes these 9 steps in order:
 
-1. **Requirements** — Elicits and documents functional/non-functional requirements from the user story. Output: `docs/requirements.md`
-2. **Architecture** — Proposes system components, interfaces, and data flow. Output: `docs/architecture.md`
-3. **Design Review** — Reviews the architecture for risks, gaps, and scalability concerns. Output: `docs/design-review.md`
-4. **Implementation Planning** — Produces a dependency-ordered task breakdown. Output: `docs/impl-plan.md`
-5. **Implementation** — Writes all Python source files and tests. Output: `src/**/*.py`, `tests/**/*.py`
-6. **Code Review** — Reviews source and tests for correctness, security, and quality. Output: `output/reports/code-review.md`
-7. **Verification** — Runs the test suite and reports results. Output: `output/test-results/results.md`
-8. **Documentation Sync** — Updates docs to match the final implemented code. Output: updated `docs/` files
-9. **PR** — Drafts and creates a GitHub Pull Request after explicit user confirmation.
+1. **Requirements** (`requirements`) — Documents functional/non-functional requirements from the user story. Output: `docs/requirements.md`
+2. **Architecture** (`architecture`) — Proposes system components, interfaces, and data flow. Output: `docs/architecture.md`
+3. **Design Review** (`design-review`) — Reviews the architecture for risks and gaps. Output: `docs/design-review.md`
+4. **Implementation Planning** (`implementation-planner`) — Dependency-ordered task breakdown. Output: `docs/impl-plan.md`
+5. **Implementation** (`implementation`) — Writes Python source and tests. Output: `src/**/*.py`, `tests/**/*.py`
+6. **Documentation Sync** (`documentation-sync`) — Updates docs to match the implemented code. Output: `output/reports/doc-sync-report.md` and updated `docs/` files
+7. **Code Review** (`code-review`) — Reviews source and tests for correctness, security, and quality. Output: `output/reports/code-review.md`
+8. **Verification** (`verification`) — Runs the test suite and reports PASS/FAIL. Output: `output/test-results/results.md`
+9. **PR** (`pr`) — Drafts a GitHub Pull Request, and creates it only after explicit user confirmation.
 
 ---
 
@@ -45,11 +40,17 @@ The orchestrator executes these 9 steps in order:
 
 | Level | Steps | Behavior |
 |---|---|---|
-| L1 — Deep Interactive | Requirements, Architecture | Subagent drafts the document with open questions; the orchestrator relays them to you (max 2 rounds), re-spawns the agent with your answers, and iterates until you approve |
-| L2 — Run + Approve | Design Review, Impl Planner, Implementation, Code Review, Verification, Doc Sync | Subagent runs autonomously; orchestrator shows output and asks: **approve / revise (with feedback) / abort** |
-| L3 — Explicit Approve | PR | Orchestrator shows full PR draft; only creates PR after your explicit confirmation |
+| L1 — Deep Interactive | Requirements, Architecture | The agent interacts with you directly (clarifying questions, iteration) until it writes its document, then returns control to the orchestrator |
+| L2 — Run + Approve | Design Review, Impl Planner, Implementation, Doc Sync, Code Review, Verification | Agent runs autonomously; orchestrator displays the output and asks **y/n** to continue. `n` pauses the pipeline; re-invoke to resume |
+| L3 — Explicit Approve | PR | Agent returns a full PR draft without creating it; the PR is created only after you answer **y** |
 
-**Feedback loops**: Design Review blockers return to Architecture; Code Review issues or failing Verification return to Implementation. Each loop is capped at 2 retries, then the orchestrator escalates to you.
+**Gating**: before each step the orchestrator verifies input files exist; after each step it verifies the gate file exists and is non-empty. A failed gate stops the pipeline with the name of the failing agent and file.
+
+**Verification failure**: a FAIL verdict does not block the pipeline if you answer `y`, but the orchestrator warns you and the failures should be documented in the PR's Known Limitations section.
+
+**No automatic feedback loops**: review findings and failures are surfaced to you; re-invoke to rerun a step.
+
+After each successful step the orchestrator appends an entry to `docs/changelog.md` (never overwriting it).
 
 ---
 
@@ -65,7 +66,7 @@ The orchestrator executes these 9 steps in order:
 | `docs/changelog.md` | Auto-appended run log |
 | `src/` | Generated Python source code |
 | `tests/` | Generated tests (unit/, integration/, fixtures/) |
-| `output/reports/` | Code review report (gitignored) |
+| `output/reports/` | Code review and doc-sync reports (gitignored) |
 | `output/test-results/` | Test results (gitignored) |
 
 User story filenames must follow the pattern `user-story-<n>.md`.
@@ -74,8 +75,8 @@ User story filenames must follow the pattern `user-story-<n>.md`.
 
 ## Do Not
 
-- **Never invoke subagents directly** — always go through the orchestrator
+- **Never invoke specialist subagents directly** — always go through the orchestrator
 - **Never skip gating checks** — each step must produce a non-empty output file before the next step runs
 - **Never create the PR without explicit user confirmation** — the PR step is L3
-- **Never run `--fresh` automatically** — only when the user explicitly passes the flag
+- **Never overwrite `docs/changelog.md`** — append only
 - **Never commit `output/`** — it is gitignored by design
