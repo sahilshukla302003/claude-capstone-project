@@ -23,7 +23,7 @@ Create the orchestrator — the single entry point for the entire pipeline. The 
 2. **Single entry point, main-thread agent** — the user starts a session with `claude --agent orchestrator` (or sets `"agent": "orchestrator"` in `.claude/settings.json`). It cannot be launched as an `@orchestrator` subagent, because subagents cannot spawn other subagents. Specialist subagents are invisible to the user.
 3. **Gating** — before calling the next step, the orchestrator validates the previous step's output file exists and is non-empty. If a gate fails, the pipeline stops and surfaces a clear error.
 4. **Interaction levels** — the orchestrator enforces the L1/L2/L3 contract:
-   - L1 (Requirements, Architecture): subagents cannot hold a Q&A with the user, so the orchestrator runs these steps itself in the main thread by following the `requirement-analysis` / `architecture-design` skills, asking the user questions directly until approved
+   - L1 (Requirements, Architecture): subagents cannot hold a Q&A with the user, so the orchestrator spawns the agent, which writes a draft with open questions; the orchestrator relays the questions to the user, re-spawns the agent with the answers (max 2 rounds), and iterates until approved
    - L2: orchestrator spawns agent, receives output, displays it, asks user **approve / revise / abort**
    - L3: orchestrator receives PR draft, displays it, asks explicit "Create this PR? (y/n)"
 5. **Changelog** — after each successful step, the orchestrator appends an entry to `docs/changelog.md`
@@ -51,7 +51,7 @@ tools: Read, Write, Glob, Bash, Agent, Skill, AskUserQuestion
 
 **Section 1: Role and Constraints**
 - You are the pipeline controller. You coordinate; you do not analyze.
-- Never write source code or design documents yourself, except the L1 documents (requirements, architecture), which you produce by following the matching skill together with the user. Delegate everything else to the appropriate specialist.
+- Never write source code or design documents yourself. Every step, including requirements and architecture, is delegated to its specialist subagent; you pass each output file to the next agent.
 - Always check output files before proceeding. Never assume an agent succeeded.
 
 **Section 2: Invocation**
@@ -65,17 +65,19 @@ First action: verify the file exists. If not, stop immediately with a clear erro
 
 ```
 Step 1 — Requirements (L1)
-  - Run in main thread: follow the requirement-analysis skill (agent file defines the persona/contract)
+  - Spawn: requirements agent
   - Input: user story file path
-  - Behavior: orchestrator asks the user clarifying questions directly (Q&A loop) until approved
+  - Behavior: agent writes docs/requirements.md with Open Questions; orchestrator relays them to the user, re-spawns with answers (max 2 rounds)
+  - Prompt: "Requirements ready. approve / revise / abort?"
   - Gate: docs/requirements.md exists AND size > 0
   - On gate fail: "Requirements step did not produce output. Please retry."
   - On gate pass: append changelog entry, proceed
 
 Step 2 — Architecture (L1)
-  - Run in main thread: follow the architecture-design skill
-  - Input: docs/requirements.md
-  - Behavior: orchestrator proposes design, asks questions, iterates until approved
+  - Spawn: architecture agent
+  - Input: docs/requirements.md (file written by Step 1)
+  - Behavior: agent writes docs/architecture.md with Open Design Questions; orchestrator relays them to the user, re-spawns with answers (max 2 rounds)
+  - Prompt: "Architecture ready. approve / revise / abort?"
   - Gate: docs/architecture.md exists AND size > 0
   - On gate fail: "Architecture step did not produce output. Please retry."
   - On gate pass: append changelog entry, proceed
@@ -194,7 +196,7 @@ On startup, before Step 1 (skipped entirely when `--fresh` is passed), check whi
 
 ## Verification
 1. Read the orchestrator file and trace through the 9 steps mentally — confirm each step references the correct specialist agent and output file
-2. Confirm the L1 steps (requirements, architecture) run in the main thread via skills and are interactive
+2. Confirm the L1 steps (requirements, architecture) are spawned as subagents and stay interactive via the orchestrator relaying open questions
 3. Confirm the L3 agent (pr) is described as draft-first, create-on-confirm
 4. Confirm no step is missing a gate check
 5. Confirm the changelog append is specified for every step

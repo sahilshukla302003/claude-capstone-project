@@ -87,17 +87,17 @@ claude --agent orchestrator
 ### Expected interaction flow:
 
 **Step 1 — Requirements (L1)**
-- Orchestrator runs the `requirement-analysis` skill in the main thread
-- It reads the user story, identifies any ambiguities, asks clarifying questions
-- You answer (e.g., "use pandas for CSV reading", "output format is plain text, not JSON")
-- Orchestrator writes `docs/requirements.md`
+- Orchestrator spawns the `requirements` agent with the user story path
+- The agent writes a draft `docs/requirements.md` with its clarifying questions under Open Questions
+- Orchestrator relays the questions to you; you answer (e.g., "use pandas for CSV reading", "output format is plain text, not JSON")
+- Orchestrator re-spawns the agent with your answers (max 2 rounds), then you approve / revise / abort
 - Orchestrator gates on the file and proceeds
 
 **Step 2 — Architecture (L1)**
-- Orchestrator runs the `architecture-design` skill in the main thread
-- It reads requirements, proposes a Python module structure
-- You may approve or ask for adjustments (e.g., "use argparse not click")
-- Orchestrator writes `docs/architecture.md`
+- Orchestrator spawns the `architecture` agent with `docs/requirements.md`
+- The agent writes a proposed Python module structure to `docs/architecture.md`, with design questions under Open Design Questions
+- Orchestrator relays the questions; you may answer or ask for adjustments (e.g., "use argparse not click")
+- Orchestrator re-spawns the agent with your answers, then you approve / revise / abort
 - Orchestrator gates and proceeds
 
 **Step 3 — Design Review (L2)**

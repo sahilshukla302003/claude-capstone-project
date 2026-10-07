@@ -10,7 +10,7 @@ A Claude Code-native agentic pipeline that accepts any Python project user story
 
 | Level | Steps | Behavior |
 |---|---|---|
-| L1 — Deep Interactive | Requirements, Architecture | Run in the orchestrator's main thread via skills (`requirement-analysis`, `architecture-design`) so it can ask you clarifying questions directly; iterates until you approve |
+| L1 — Deep Interactive | Requirements, Architecture | Spawned subagent drafts the document with open questions; the orchestrator relays them to you (max 2 rounds), re-spawns the agent with your answers, and iterates until you approve |
 | L2 — Run + Approve | Design Review, Impl Planner, Implementation, Code Review, Verification, Doc Sync | Subagent runs autonomously, orchestrator shows output and asks: **approve / revise (with feedback) / abort** |
 | L3 — Explicit Approve | PR | Orchestrator shows full PR draft; only creates PR after your explicit confirmation |
 
@@ -30,9 +30,9 @@ user-stories/user-story-N.md
         ▼
 [ORCHESTRATOR] ──────────────────────────────────────────────┐
         │                                                     │
-        ├─[L1]─► Requirements (skill) ──► docs/requirements.md│
+        ├─[L1]─► Requirements Agent ──► docs/requirements.md │
         │                                                     │
-        ├─[L1]─► Architecture (skill) ──► docs/architecture.md│
+        ├─[L1]─► Architecture Agent ──► docs/architecture.md │
         │                                                     │
         ├─[L2]─► Design Review Agent ──► docs/design-review.md
         │                                                     │
@@ -154,7 +154,7 @@ Agent input/output contracts:
 | documentation-sync | final `src/` + `docs/*.md` (git diff only if a baseline commit exists) | updated `docs/` files |
 | pr | all docs + test results (embedded in PR body, since `output/` is gitignored) | GitHub Pull Request URL |
 
-The requirements and architecture agent files define the L1 behavior; the orchestrator executes them in the main thread via the matching skills so it can interact with you.
+The requirements and architecture agents are spawned like the others; their L1 behavior is relayed by the orchestrator (draft with open questions → orchestrator asks you → re-spawn with answers).
 
 Tasks:
 - [ ] `.claude/agents/requirements.md`
@@ -176,7 +176,7 @@ Tasks:
 
 Orchestrator responsibilities:
 - Read user story file passed as argument
-- Run as the main-thread agent (`claude --agent orchestrator`); run L1 steps via skills, spawn L2/L3 specialists with the Agent tool
+- Run as the main-thread agent (`claude --agent orchestrator`); spawn every specialist (L1, L2, L3) with the Agent tool and relay L1 questions to the user
 - Apply interaction level rules (L1/L2/L3) per step; L2 offers approve / revise / abort
 - Route failures back through bounded feedback loops (max 2 retries) before escalating
 - Resume interrupted runs by skipping steps whose output already exists (`--fresh` regenerates everything)

@@ -23,7 +23,7 @@ tools: Read, Write, Glob, Grep, Bash
 ---
 ```
 
-**Note on L1 agents (requirements, architecture)**: a spawned subagent runs to completion and cannot hold a back-and-forth with the user. These two files define the persona, contract and output format, but the orchestrator executes the work itself in the main thread via the matching skill (`requirement-analysis`, `architecture-design`) so it can ask the user questions directly. The agent files can still be used for non-interactive re-generation (e.g. `--fresh` with answers already captured).
+**Note on L1 agents (requirements, architecture)**: a spawned subagent runs to completion and cannot hold a back-and-forth with the user. These two agents are spawned like every other specialist: on the first pass they write a draft whose Open Questions / Open Design Questions section lists every question with an assumed answer; the orchestrator relays those questions to the user (max 2 rounds) and re-spawns the agent with the answers so it finalizes the document.
 
 **Pipeline order**: requirements → architecture → design-review → implementation-planner → implementation → code-review → verification → documentation-sync → pr. Agent numbers below are identifiers, not execution order.
 
@@ -226,5 +226,5 @@ tools: Read, Write, Glob, Grep, Bash
 For each agent file:
 1. Confirm frontmatter is valid YAML with `name`, `description`, and `tools`
 2. Confirm the system prompt references the correct input files and output files
-3. Confirm the interaction level is correctly described (L1 agents must mention Q&A iteration and that the orchestrator runs them in the main thread; L3 agent must mention draft-first, create-only-on-confirm)
+3. Confirm the interaction level is correctly described (L1 agents must mention Q&A iteration relayed by the orchestrator (draft with open questions, re-spawn with answers); L3 agent must mention draft-first, create-only-on-confirm)
 4. Confirm no agent attempts to call another agent — only the orchestrator spawns subagents

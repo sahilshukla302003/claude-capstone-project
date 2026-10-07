@@ -45,7 +45,7 @@ The orchestrator executes these 9 steps in order:
 
 | Level | Steps | Behavior |
 |---|---|---|
-| L1 — Deep Interactive | Requirements, Architecture | Runs in the orchestrator's main thread via skills so it can ask you clarifying questions directly; iterates until you approve |
+| L1 — Deep Interactive | Requirements, Architecture | Subagent drafts the document with open questions; the orchestrator relays them to you (max 2 rounds), re-spawns the agent with your answers, and iterates until you approve |
 | L2 — Run + Approve | Design Review, Impl Planner, Implementation, Code Review, Verification, Doc Sync | Subagent runs autonomously; orchestrator shows output and asks: **approve / revise (with feedback) / abort** |
 | L3 — Explicit Approve | PR | Orchestrator shows full PR draft; only creates PR after your explicit confirmation |
 

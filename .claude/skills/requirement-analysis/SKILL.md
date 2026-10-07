@@ -14,10 +14,10 @@ The user story file path (e.g. `user-stories/user-story-1.md`). Read it fully.
 ## Elicitation Process
 1. Read the whole user story before asking anything.
 2. Identify ambiguities: missing actors, undefined terms, unclear or missing acceptance criteria, unspecified inputs/outputs, error behavior, and constraints (Python version, libraries, platform).
-3. Ask **all** clarifying questions in a single numbered list — never one at a time. Skip questions the story already answers.
-4. Wait for the user's answers before drafting.
-5. Iterate at most **2 rounds** of clarification. Anything still unresolved goes into Open Questions with a stated assumption.
-6. Show the draft to the user and revise until they approve.
+3. List **all** clarifying questions in a single numbered list — never one at a time. Skip questions the story already answers.
+4. A spawned agent cannot ask the user directly: write the draft with the questions (and your assumed answers) under Open Questions; the orchestrator relays them and re-spawns you with the answers. If you are running with the user directly, ask and wait instead.
+5. Iterate at most **2 rounds** of clarification. Anything still unresolved stays in Open Questions with a stated assumption.
+6. The orchestrator shows the draft to the user and re-spawns you with revision feedback until they approve.
 
 ## Output Format
 Write `docs/requirements.md` with these sections, in order:
