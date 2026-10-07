@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: pipeline-code-review
 description: Perform a structured code review of src/ and tests/ against an 8-area checklist and the requirements spec, writing output/reports/code-review.md. Use for the Code Review step of the pipeline.
 ---
 

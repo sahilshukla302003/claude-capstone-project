@@ -74,7 +74,7 @@ agentic-sdlc-pipeline/
 │   │   ├── architecture-design/SKILL.md
 │   │   ├── implementation-planning/SKILL.md
 │   │   ├── documentation-sync/SKILL.md
-│   │   ├── code-review/SKILL.md
+│   │   ├── pipeline-code-review/SKILL.md
 │   │   └── verification/SKILL.md
 │   └── settings.json                  # hooks configuration
 ├── user-stories/
@@ -128,7 +128,7 @@ Tasks:
 - [ ] `.claude/skills/architecture-design/SKILL.md` — component + data flow design template
 - [ ] `.claude/skills/implementation-planning/SKILL.md` — dependency-ordered task breakdown template
 - [ ] `.claude/skills/documentation-sync/SKILL.md` — code-to-doc update pattern
-- [ ] `.claude/skills/code-review/SKILL.md` — review checklist (correctness, security, error handling, DRY, test coverage, dependency safety)
+- [ ] `.claude/skills/pipeline-code-review/SKILL.md` — review checklist (correctness, security, error handling, DRY, test coverage, dependency safety)
 - [ ] `.claude/skills/verification/SKILL.md` — test run + quality gate template
 
 Each file needs `name` and `description` frontmatter so Claude Code discovers it.

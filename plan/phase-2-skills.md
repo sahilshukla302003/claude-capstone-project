@@ -114,7 +114,7 @@ Agents reference skills in their system prompts: "Use the `requirement-analysis`
 
 ---
 
-### Skill 5 — `code-review/SKILL.md`
+### Skill 5 — `pipeline-code-review/SKILL.md`
 **Purpose**: Perform a structured code review against a defined checklist.
 
 **Review Areas and Questions:**
@@ -169,11 +169,11 @@ Agents reference skills in their system prompts: "Use the `requirement-analysis`
 - [ ] `.claude/skills/architecture-design/SKILL.md`
 - [ ] `.claude/skills/implementation-planning/SKILL.md`
 - [ ] `.claude/skills/documentation-sync/SKILL.md`
-- [ ] `.claude/skills/code-review/SKILL.md`
+- [ ] `.claude/skills/pipeline-code-review/SKILL.md`
 - [ ] `.claude/skills/verification/SKILL.md`
 - [ ] All 6 files committed
 
 ---
 
 ## Verification
-Each skill file should be readable as a standalone document — an agent should be able to follow it without needing additional context. Spot-check: confirm each skill appears in Claude Code's skill list (name + description frontmatter present), then read `code-review/SKILL.md` and confirm the review checklist covers all 8 areas defined in the project plan.
+Each skill file should be readable as a standalone document — an agent should be able to follow it without needing additional context. Spot-check: confirm each skill appears in Claude Code's skill list (name + description frontmatter present), then read `pipeline-code-review/SKILL.md` and confirm the review checklist covers all 8 areas defined in the project plan.

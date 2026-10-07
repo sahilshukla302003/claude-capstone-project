@@ -156,7 +156,7 @@ tools: Read, Write, Glob, Grep, Bash
 **Output**: `output/reports/code-review.md`
 
 **System Prompt must instruct the agent to:**
-- Use the `code-review` skill checklist for all 8 review areas
+- Use the `pipeline-code-review` skill checklist for all 8 review areas
 - Read every `.py` file in `src/` and `tests/`
 - Cross-reference findings against `docs/requirements.md` — only flag deviations from spec, not style preferences
 - Assign severity: Critical (breaks functionality or security) / Major (significant quality issue) / Minor (style, clarity)
